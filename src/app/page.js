@@ -1,11 +1,22 @@
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
+import Results from "@/components/Results";
 
+const API_KEY = process.env.API_KEY
+export default async function Home({ searchParams }) {
 
-const inter = Inter({ subsets: ['latin'] })
-
-export default function Home() {
+  const genre = searchParams.genre || "fetchTrending"
+  const res = await fetch(
+    `https://api.themoviedb.org/3/${genre === "fetchClassic" ? "movie/upcoming" : "trending/all/week"
+    }?api_key=${API_KEY}&language=en-US&page=1`,
+    { next: { revalidate: 10000 } }
+  );
+  const data = await res.json();
+  const results = data.results
+  if (!res.ok) {
+    throw new Error("Failed to fetch data"); // this will be caught by the error page and passed to the page as props
+  }
   return (
-    <h1 className='text-red-900'>HOME</h1>
+    <div>
+      <Results results={results} />
+    </div>
   )
 }
